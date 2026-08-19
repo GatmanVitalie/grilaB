@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grilă examen auto — Categoria B</title>
+<style>
+  :root{
+    --bg:#12161d;
+    --panel:#1a2029;
+    --panel-alt:#212936;
+    --line:#2a323f;
+    --text:#e8ecf1;
+    --muted:#7c8798;
+    --amber:#f0a83c;
+    --amber-dim:rgba(240,168,60,0.14);
+    --green:#4fae80;
+    --green-dim:rgba(79,174,128,0.14);
+    --red:#e0554f;
+    --red-dim:rgba(224,85,79,0.14);
+    --mono: 'SF Mono','JetBrains Mono',Consolas,Menlo,monospace;
+    --sans: -apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--sans);}
+  body{padding-bottom:60px;}
+  .app{max-width:720px;margin:0 auto;animation:fadeIn .5s ease both;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  /* Topbar */
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 18px 10px;gap:12px;}
+  .topbar h1{font-size:17px;margin:0;letter-spacing:.02em;font-weight:700;}
+  .topbar .sub{display:block;color:var(--muted);font-size:12px;font-weight:400;margin-top:3px;letter-spacing:.04em;text-transform:uppercase;}
+  .reset-btn{background:var(--panel-alt);color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:9px 14px;font-size:12px;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:.15s;}
+  .reset-btn:hover{color:var(--text);border-color:var(--muted);}
+  .reset-btn:active{transform:scale(.96);}
+
+  /* Candidate panel */
+  .candidate-panel{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 18px 16px;}
+  .field{display:flex;flex-direction:column;gap:4px;}
+  .field.full{grid-column:1 / -1;}
+  .field label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+  .field input{background:transparent;border:none;border-bottom:1px solid var(--line);color:var(--text);font-family:var(--sans);font-size:14px;padding:5px 2px;outline:none;}
+  .field input:focus{border-bottom-color:var(--amber);}
+
+  /* Gauge panel */
+  .gauge-panel{position:sticky;top:0;z-index:10;background:linear-gradient(var(--bg) 82%, transparent);padding:6px 18px 14px;}
+  .gauge-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 14px 18px;text-align:center;}
+  .gauge-svg{width:100%;max-width:280px;height:auto;display:block;margin:0 auto;}
+  .arc-track{fill:none;stroke:var(--panel-alt);stroke-width:18;stroke-linecap:round;}
+  .arc-fill{fill:none;stroke:var(--green);stroke-width:18;stroke-linecap:round;transition:stroke-dashoffset .45s cubic-bezier(.4,0,.2,1), stroke .3s ease;}
+  .tick-line{stroke:var(--muted);stroke-width:2.5;}
+  .tick-label{fill:var(--muted);font-family:var(--mono);font-size:11px;}
+  .end-label{fill:var(--muted);font-family:var(--mono);font-size:11px;}
+
+  .readout{margin-top:-38px;}
+  .score-number{font-family:var(--mono);font-weight:700;font-size:54px;line-height:1;color:var(--text);transition:color .3s ease;}
+  .score-label{font-size:10.5px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:2px;}
+  .penalty-line{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:8px;}
+  .penalty-line b{color:var(--text);font-weight:600;}
+
+  .verdict{display:inline-block;margin-top:10px;padding:5px 16px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-family:var(--sans);transition:.3s ease;}
+  .verdict.pass{background:var(--green-dim);color:var(--green);}
+  .verdict.fail{background:var(--red-dim);color:var(--red);}
+
+  /* Criteria list */
+  .criteria{padding:4px 18px 20px;}
+  .section-title{font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:22px 0 8px;padding-left:2px;}
+  .section-title:first-child{margin-top:6px;}
+
+  .item{border:1px solid var(--line);border-left:3px solid var(--line);border-radius:10px;background:var(--panel);margin-bottom:7px;overflow:hidden;transition:border-color .2s ease, background .2s ease;}
+  .item.checked{background:var(--amber-dim);border-left-color:var(--amber);}
+  .item.checked.critical{background:var(--red-dim);border-left-color:var(--red);}
+
+  .item-row{display:flex;align-items:flex-start;gap:11px;padding:12px 13px;cursor:pointer;}
+  .item-row input[type=checkbox]{width:19px;height:19px;flex:none;margin-top:1px;accent-color:var(--amber);cursor:pointer;}
+  .item.critical .item-row input[type=checkbox]{accent-color:var(--red);}
+
+  .item-text{flex:1;font-size:13.5px;line-height:1.42;}
+  .item-code{font-family:var(--mono);color:var(--muted);font-size:11.5px;margin-right:7px;}
+
+  .item-pts{flex:none;font-family:var(--mono);font-size:12px;font-weight:700;padding:3px 8px;border-radius:6px;height:fit-content;}
+  .item-pts.minor{color:var(--muted);background:var(--panel-alt);}
+  .item-pts.moderate{color:var(--amber);background:var(--amber-dim);}
+  .item-pts.critical{color:var(--red);background:var(--red-dim);}
+
+  .item-note{max-height:0;overflow:hidden;transition:max-height .2s ease, padding .2s ease;padding:0 13px;}
+  .item.checked .item-note{max-height:44px;padding:0 13px 12px 43px;}
+  .item-note input{width:110px;background:var(--panel-alt);border:1px solid var(--line);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:12px;padding:6px 8px;outline:none;}
+  .item-note input::placeholder{color:var(--muted);}
+  .item-note input:focus{border-color:var(--amber);}
+  .item-note span{font-size:10.5px;color:var(--muted);margin-left:7px;}
+
+  footer{padding:10px 18px 30px;text-align:center;color:var(--muted);font-size:11px;line-height:1.6;}
+
+  @media print{
+    .reset-btn, .item-note{display:none !important;}
+    body{background:#fff;color:#000;}
+    .gauge-panel{position:static;background:none;}
+    .item, .gauge-card{border-color:#ccc;background:#fff;}
+    .item.checked{background:#fdf1e0;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div>
+      <h1>Grilă examen practic — categoria B
+        <span class="sub">Auto-calcul penalizări</span>
+      </h1>
+    </div>
+    <button class="reset-btn" id="resetBtn">Candidat nou</button>
+  </div>
+
+  <div class="candidate-panel">
+    <div class="field"><label>Candidat</label><input type="text" id="fName" placeholder="Nume Prenume"></div>
+    <div class="field"><label>Data</label><input type="text" id="fDate" placeholder="zz.ll.aaaa"></div>
+    <div class="field"><label>Examinator</label><input type="text" id="fExam" placeholder="Nume examinator"></div>
+    <div class="field"><label>Nr. comandă</label><input type="text" id="fOrder" placeholder="—"></div>
+  </div>
+
+  <div class="gauge-panel">
+    <div class="gauge-card">
+      <svg class="gauge-svg" viewBox="0 0 260 165">
+        <path class="arc-track" d="M30,140 A100,100 0 0 1 230,140"/>
+        <path class="arc-fill" id="arcFill" d="M30,140 A100,100 0 0 1 230,140"/>
+        <line class="tick-line" x1="196.1" y1="65.0" x2="210.6" y2="48.5"/>
+        <text class="tick-label" x="222" y="34" text-anchor="middle">73</text>
+        <text class="end-label" x="30" y="158" text-anchor="middle">0</text>
+        <text class="end-label" x="230" y="158" text-anchor="middle">100</text>
+      </svg>
+      <div class="readout">
+        <div class="score-number" id="scoreNumber">100</div>
+        <div class="score-label">Scor (100 − penalizări)</div>
+        <div class="penalty-line">Penalizări acumulate: <b id="penaltyNumber">0</b> pct. &nbsp;·&nbsp; prag respingere: 27 pct.</div>
+        <div class="verdict pass" id="verdict">ADMIS</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="criteria" id="criteriaList"></div>
+
+  <footer>Reproduce grila de penalizare din Anexa 3 (Metodica probei practice, categoria B). Rezultat: &lt;27 pct. admis / ≥27 pct. respins.</footer>
+</div>
+
+<script>
+const SECTIONS = [
+  {title:"1. Obligațiile conducătorului înainte de deplasare", items:[
+    {code:"1.1.1", pts:1, text:"(Ne) Deschiderea capotei, indicarea rezervorului de combustibil, rezervorului lichidului de răcire și rezervorului lichidului de spălare"},
+    {code:"1.1.2", pts:1, text:"(Ne) Indicarea butonului de avarie, comutatorul ștergătoarelor și comutatorul luminilor anti-ceață"},
+    {code:"1.1.3", pts:1, text:"(Ne) Deschiderea capotei, indicarea jojei de ulei și bușonului de umplere ulei"},
+    {code:"1.2",   pts:5, text:"(Ne) verificarea închiderii ușilor"},
+    {code:"1.3",   pts:3, text:"(Ne) ajustarea banchetei, oglinzilor retrovizoare"},
+    {code:"1.4",   pts:3, text:"(Ne) conectarea luminii în faruri (RCR pct.34, al.3)"},
+    {code:"1.5",   pts:27,text:"(Ne) cuplarea centurii de siguranță"},
+    {code:"1.6",   pts:3, text:"(Ne) eliberarea frânei de staționare"},
+  ]},
+  {title:"2. Executarea în siguranță a manevrelor speciale", items:[
+    {code:"2.1", pts:5, text:"Incapacitatea de a efectua mersul înapoi virând stânga/dreapta, menținând banda de circulație corectă (teren plat, 1 tentativă)"},
+    {code:"2.2", pts:5, text:"Incapacitatea de a întoarce vehiculul în sens opus, folosind mers înainte și înapoi (1 tentativă din 3 mișcări)"},
+    {code:"2.3", pts:5, text:"(Ne) încadrarea vehiculului în limitele spațiului de parcare, la intrare sau ieșire (1 tentativă)"},
+  ]},
+  {title:"3. Începutul deplasării și schimbarea direcției de mers", items:[
+    {code:"3.1", pts:3, text:"(Ne) semnalizarea sau semnalizarea incorectă a direcției de mers (RCR pct.32)"},
+    {code:"3.2", pts:7, text:"(Ne) asigurarea la schimbarea direcției și/sau intrarea în intersecții nedirijate (RCR pct.39, al.1)"},
+    {code:"3.3", pts:7, text:"Întoarcerea sau deplasarea în marșarier neregulamentară (RCR pct.41)"},
+    {code:"3.4", pts:3, text:"Devierea de la traseu și neglijarea indicațiilor examinatorului"},
+  ]},
+  {title:"4. Poziția vehiculului pe carosabil", items:[
+    {code:"4.1", pts:5, text:"(Ne) încadrarea sau poziționarea incorectă în limitele benzilor de circulație (RCR pct.40, 42, 43)"},
+    {code:"4.2", pts:7, text:"Intrarea în intersecție sau pe trecerea pentru pietoni cu circulația blocată în direcția de mers (RCR pct.57)"},
+    {code:"4.3", pts:7, text:"(Ne) respectarea semnalizării, a indicatoarelor și/sau marcajelor rutiere"},
+  ]},
+  {title:"5. Viteza de deplasare și spațiul între vehicule", items:[
+    {code:"5.1", pts:7, text:"(Ne) respectarea limitelor de viteză (marjă 3 km/h, în timp scurt)"},
+    {code:"5.2", pts:3, text:"(Ne) aprecierea și menținerea distanțelor și intervalelor de siguranță"},
+    {code:"5.3", pts:3, text:"Viteză redusă fără motiv întemeiat / neîncadrarea în ritmul traficului (după avertizare) — RCR pct.50 lit.c"},
+    {code:"5.4", pts:5, text:"(Ne) reducerea vitezei la apropierea de pietoni, vehicule parcate, transport public, treceri pentru pietoni (RCR pct.46)"},
+  ]},
+  {title:"6. Depășirea", items:[
+    {code:"6.1", pts:27, text:"(Ne) respectarea regulilor de executare în siguranță a depășirii (RCR pct.51–54)"},
+  ]},
+  {title:"7. Traversarea intersecțiilor", items:[
+    {code:"7.1", pts:27, text:"(Ne) respectarea regulilor de traversare a intersecțiilor cu circulație nedirijată (RCR pct.59)"},
+    {code:"7.2", pts:27, text:"(Ne) respectarea semnalului de interzicere al semaforului sau al agentului de circulație"},
+    {code:"7.3", pts:3,  text:"(Ne) traversarea sau traversarea întârziată a intersecției ori a trecerii pentru pietoni"},
+  ]},
+  {title:"8. Traversarea căilor ferate", items:[
+    {code:"8.1", pts:27, text:"(Ne) respectarea regulilor de traversare a căilor ferate (RCR pct.60, 62–64)"},
+  ]},
+  {title:"9. Oprirea voluntară și staționarea", items:[
+    {code:"9.1", pts:5, text:"Oprirea neregulamentară și/sau în locuri interzise (RCR pct.68, 69)"},
+  ]},
+  {title:"10. Prioritatea în traficul rutier", items:[
+    {code:"10.1", pts:27, text:"(Ne) acordarea priorității vehiculelor care au prioritate"},
+    {code:"10.2", pts:27, text:"(Ne) acordarea priorității pietonilor care au prioritate"},
+    {code:"10.3", pts:27, text:"(Ne) acordarea priorității vehiculelor cu regim prioritar de circulație (RCR pct.106)"},
+    {code:"10.4", pts:3,  text:"Tendință repetată de a ceda trecerea când nu are prioritate (o singură penalizare, după avertizare)"},
+  ]},
+  {title:"11. Vizibilitate redusă / condiții meteo nefavorabile", items:[
+    {code:"11.1", pts:3, text:"(Ne) adaptarea la condiții de ploaie, mâzgă, zăpadă, polei etc. (o singură penalizare)"},
+  ]},
+  {title:"12. Erori tehnice", items:[
+    {code:"12.1", pts:3, text:"Oprirea motorului la pornire și/sau în timpul deplasării (prima eroare nu se penalizează)"},
+    {code:"12.2", pts:3, text:"(Ne) sincronizarea acțiunilor la demarare/accelerare/frânare"},
+    {code:"12.3", pts:3, text:"La pornire eliberează brusc pedala de ambreiaj și smuncește vehiculul"},
+    {code:"12.4", pts:3, text:"La pornire vehiculul se deplasează cu spatele"},
+  ]},
+  {title:"13. Erori grave — pericol pentru siguranță", items:[
+    {code:"13.1", pts:27, text:"Pierderea controlului asupra vehiculului, intervenția examinatorului pentru a evita un pericol iminent/accident, sau perturbarea examenului"},
+  ]},
+  {title:"14. Renunțarea la examen", items:[
+    {code:"14.1", pts:27, text:"Renunțarea benevolă a candidatului la desfășurarea examenului"},
+  ]},
+  {title:"15. Manevre cu precauție sporită", items:[
+    {code:"15.1", pts:5, text:"Incapacitate de a efectua depășirea/încrucișarea/devansarea altor vehicule"},
+    {code:"15.2", pts:5, text:"Incapacitate de a efectua frânarea de urgență (la viteză de 30 km/h)"},
+    {code:"15.3", pts:5, text:"Incapacitate de a conduce cu viteza maximă permisă"},
+  ]},
+];
+
+function tier(pts){ return pts>=27 ? 'critical' : (pts>=5 ? 'moderate' : 'minor'); }
+
+const list = document.getElementById('criteriaList');
+let html = '';
+SECTIONS.forEach(sec=>{
+  html += `<div class="section-title">${sec.title}</div>`;
+  sec.items.forEach(it=>{
+    const id = 'c' + it.code.replace(/\./g,'_');
+    const t = tier(it.pts);
+    html += `
+      <div class="item ${t}" id="item-${id}">
+        <label class="item-row">
+          <input type="checkbox" data-pts="${it.pts}" data-id="${id}">
+          <span class="item-text"><span class="item-code">${it.code}</span>${it.text}</span>
+          <span class="item-pts ${t}">−${it.pts}</span>
+        </label>
+        <div class="item-note">
+          <input type="text" maxlength="6" placeholder="minutul">
+          <span>momentul erorii (opțional)</span>
+        </div>
+      </div>`;
+  });
+});
+list.innerHTML = html;
+
+const R = 100, CIRC = Math.PI * R;
+const arcFill = document.getElementById('arcFill');
+const scoreNumber = document.getElementById('scoreNumber');
+const penaltyNumber = document.getElementById('penaltyNumber');
+const verdict = document.getElementById('verdict');
+arcFill.style.strokeDasharray = CIRC;
+
+function recalc(){
+  let penalty = 0;
+  document.querySelectorAll('#criteriaList input[type=checkbox]').forEach(cb=>{
+    const row = document.getElementById('item-' + cb.dataset.id);
+    if(cb.checked){ penalty += Number(cb.dataset.pts); row.classList.add('checked'); }
+    else { row.classList.remove('checked'); }
+  });
+  const score = Math.max(0, 100 - penalty);
+  scoreNumber.textContent = score;
+  penaltyNumber.textContent = penalty;
+
+  const offset = CIRC * (1 - score/100);
+  arcFill.style.strokeDashoffset = offset;
+
+  let color = 'var(--green)';
+  if(penalty >= 27){ color = 'var(--red)'; }
+  else if(penalty >= 20){ color = 'var(--amber)'; }
+  arcFill.style.stroke = color;
+  scoreNumber.style.color = color;
+
+  if(penalty >= 27){
+    verdict.textContent = 'RESPINS';
+    verdict.className = 'verdict fail';
+  } else {
+    verdict.textContent = 'ADMIS';
+    verdict.className = 'verdict pass';
+  }
+}
+recalc();
+
+list.addEventListener('change', e=>{
+  if(e.target.matches('input[type=checkbox]')) recalc();
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(!confirm('Ștergi toate bifele și pornești un candidat nou?')) return;
+  document.querySelectorAll('#criteriaList input[type=checkbox]').forEach(cb=> cb.checked=false);
+  document.querySelectorAll('#criteriaList input[type=text]').forEach(inp=> inp.value='');
+  ['fName','fDate','fExam','fOrder'].forEach(id=> document.getElementById(id).value='');
+  recalc();
+});
+</script>
+</body>
+</html>
