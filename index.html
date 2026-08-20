@@ -84,6 +84,19 @@
   .item-pts.moderate{color:var(--amber);background:var(--amber-dim);}
   .item-pts.critical{color:var(--red);background:var(--red-dim);}
 
+  .item-row.counter-row{cursor:default;align-items:flex-start;}
+  .item-pts i{display:block;font-style:normal;font-size:9px;opacity:.7;text-align:center;font-weight:400;margin-top:1px;}
+
+  .stepper-row{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:0 13px 12px;}
+  .step-sub{font-family:var(--mono);font-size:11px;color:var(--muted);}
+  .stepper{display:flex;align-items:center;gap:2px;background:var(--panel-alt);border:1px solid var(--line);border-radius:999px;padding:3px;flex:none;}
+  .step-btn{width:28px;height:28px;border-radius:50%;border:none;background:transparent;color:var(--text);font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--sans);}
+  .step-btn:hover{background:var(--line);}
+  .step-btn:active{transform:scale(.9);}
+  .step-count{font-family:var(--mono);font-size:14px;font-weight:700;min-width:22px;text-align:center;}
+  .item.checked .stepper{border-color:var(--amber);}
+  .item.checked.critical .stepper{border-color:var(--red);}
+
   .item-note{max-height:0;overflow:hidden;transition:max-height .2s ease, padding .2s ease;padding:0 13px;}
   .item.checked .item-note{max-height:44px;padding:0 13px 12px 43px;}
   .item-note input{width:110px;background:var(--panel-alt);border:1px solid var(--line);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:12px;padding:6px 8px;outline:none;}
@@ -162,47 +175,47 @@ const SECTIONS = [
     {code:"2.2", pts:5, text:"Incapacitatea de a întoarce vehiculul în sens opus, folosind mers înainte și înapoi (1 tentativă din 3 mișcări)"},
     {code:"2.3", pts:5, text:"(Ne) încadrarea vehiculului în limitele spațiului de parcare, la intrare sau ieșire (1 tentativă)"},
   ]},
-  {title:"3. Începutul deplasării și schimbarea direcției de mers", items:[
+  {title:"3. Începutul deplasării și schimbarea direcției de mers", counter:true, items:[
     {code:"3.1", pts:3, text:"(Ne) semnalizarea sau semnalizarea incorectă a direcției de mers (RCR pct.32)"},
     {code:"3.2", pts:7, text:"(Ne) asigurarea la schimbarea direcției și/sau intrarea în intersecții nedirijate (RCR pct.39, al.1)"},
     {code:"3.3", pts:7, text:"Întoarcerea sau deplasarea în marșarier neregulamentară (RCR pct.41)"},
     {code:"3.4", pts:3, text:"Devierea de la traseu și neglijarea indicațiilor examinatorului"},
   ]},
-  {title:"4. Poziția vehiculului pe carosabil", items:[
+  {title:"4. Poziția vehiculului pe carosabil", counter:true, items:[
     {code:"4.1", pts:5, text:"(Ne) încadrarea sau poziționarea incorectă în limitele benzilor de circulație (RCR pct.40, 42, 43)"},
     {code:"4.2", pts:7, text:"Intrarea în intersecție sau pe trecerea pentru pietoni cu circulația blocată în direcția de mers (RCR pct.57)"},
     {code:"4.3", pts:7, text:"(Ne) respectarea semnalizării, a indicatoarelor și/sau marcajelor rutiere"},
   ]},
-  {title:"5. Viteza de deplasare și spațiul între vehicule", items:[
+  {title:"5. Viteza de deplasare și spațiul între vehicule", counter:true, items:[
     {code:"5.1", pts:7, text:"(Ne) respectarea limitelor de viteză (marjă 3 km/h, în timp scurt)"},
     {code:"5.2", pts:3, text:"(Ne) aprecierea și menținerea distanțelor și intervalelor de siguranță"},
     {code:"5.3", pts:3, text:"Viteză redusă fără motiv întemeiat / neîncadrarea în ritmul traficului (după avertizare) — RCR pct.50 lit.c"},
     {code:"5.4", pts:5, text:"(Ne) reducerea vitezei la apropierea de pietoni, vehicule parcate, transport public, treceri pentru pietoni (RCR pct.46)"},
   ]},
-  {title:"6. Depășirea", items:[
+  {title:"6. Depășirea", counter:true, items:[
     {code:"6.1", pts:27, text:"(Ne) respectarea regulilor de executare în siguranță a depășirii (RCR pct.51–54)"},
   ]},
-  {title:"7. Traversarea intersecțiilor", items:[
+  {title:"7. Traversarea intersecțiilor", counter:true, items:[
     {code:"7.1", pts:27, text:"(Ne) respectarea regulilor de traversare a intersecțiilor cu circulație nedirijată (RCR pct.59)"},
     {code:"7.2", pts:27, text:"(Ne) respectarea semnalului de interzicere al semaforului sau al agentului de circulație"},
     {code:"7.3", pts:3,  text:"(Ne) traversarea sau traversarea întârziată a intersecției ori a trecerii pentru pietoni"},
   ]},
-  {title:"8. Traversarea căilor ferate", items:[
+  {title:"8. Traversarea căilor ferate", counter:true, items:[
     {code:"8.1", pts:27, text:"(Ne) respectarea regulilor de traversare a căilor ferate (RCR pct.60, 62–64)"},
   ]},
-  {title:"9. Oprirea voluntară și staționarea", items:[
+  {title:"9. Oprirea voluntară și staționarea", counter:true, items:[
     {code:"9.1", pts:5, text:"Oprirea neregulamentară și/sau în locuri interzise (RCR pct.68, 69)"},
   ]},
-  {title:"10. Prioritatea în traficul rutier", items:[
+  {title:"10. Prioritatea în traficul rutier", counter:true, items:[
     {code:"10.1", pts:27, text:"(Ne) acordarea priorității vehiculelor care au prioritate"},
     {code:"10.2", pts:27, text:"(Ne) acordarea priorității pietonilor care au prioritate"},
     {code:"10.3", pts:27, text:"(Ne) acordarea priorității vehiculelor cu regim prioritar de circulație (RCR pct.106)"},
     {code:"10.4", pts:3,  text:"Tendință repetată de a ceda trecerea când nu are prioritate (o singură penalizare, după avertizare)"},
   ]},
-  {title:"11. Vizibilitate redusă / condiții meteo nefavorabile", items:[
+  {title:"11. Vizibilitate redusă / condiții meteo nefavorabile", counter:true, items:[
     {code:"11.1", pts:3, text:"(Ne) adaptarea la condiții de ploaie, mâzgă, zăpadă, polei etc. (o singură penalizare)"},
   ]},
-  {title:"12. Erori tehnice", items:[
+  {title:"12. Erori tehnice", counter:true, items:[
     {code:"12.1", pts:3, text:"Oprirea motorului la pornire și/sau în timpul deplasării (prima eroare nu se penalizează)"},
     {code:"12.2", pts:3, text:"(Ne) sincronizarea acțiunilor la demarare/accelerare/frânare"},
     {code:"12.3", pts:3, text:"La pornire eliberează brusc pedala de ambreiaj și smuncește vehiculul"},
@@ -214,7 +227,7 @@ const SECTIONS = [
   {title:"14. Renunțarea la examen", items:[
     {code:"14.1", pts:27, text:"Renunțarea benevolă a candidatului la desfășurarea examenului"},
   ]},
-  {title:"15. Manevre cu precauție sporită", items:[
+  {title:"15. Manevre cu precauție sporită", counter:true, items:[
     {code:"15.1", pts:5, text:"Incapacitate de a efectua depășirea/încrucișarea/devansarea altor vehicule"},
     {code:"15.2", pts:5, text:"Incapacitate de a efectua frânarea de urgență (la viteză de 30 km/h)"},
     {code:"15.3", pts:5, text:"Incapacitate de a conduce cu viteza maximă permisă"},
@@ -230,18 +243,37 @@ SECTIONS.forEach(sec=>{
   sec.items.forEach(it=>{
     const id = 'c' + it.code.replace(/\./g,'_');
     const t = tier(it.pts);
-    html += `
-      <div class="item ${t}" id="item-${id}">
-        <label class="item-row">
-          <input type="checkbox" data-pts="${it.pts}" data-id="${id}">
-          <span class="item-text"><span class="item-code">${it.code}</span>${it.text}</span>
-          <span class="item-pts ${t}">−${it.pts}</span>
-        </label>
-        <div class="item-note">
-          <input type="text" maxlength="6" placeholder="minutul">
-          <span>momentul erorii (opțional)</span>
-        </div>
-      </div>`;
+
+    if(sec.counter){
+      html += `
+        <div class="item ${t}" id="item-${id}" data-counter="true" data-pts="${it.pts}" data-count="0">
+          <div class="item-row counter-row">
+            <span class="item-text"><span class="item-code">${it.code}</span>${it.text}</span>
+            <span class="item-pts ${t}">−${it.pts}<i>/dată</i></span>
+          </div>
+          <div class="stepper-row">
+            <span class="step-sub" id="sub-${id}"></span>
+            <div class="stepper">
+              <button type="button" class="step-btn minus" data-id="${id}" aria-label="Scade">−</button>
+              <span class="step-count" id="count-${id}">0</span>
+              <button type="button" class="step-btn plus" data-id="${id}" aria-label="Crește">+</button>
+            </div>
+          </div>
+        </div>`;
+    } else {
+      html += `
+        <div class="item ${t}" id="item-${id}">
+          <label class="item-row">
+            <input type="checkbox" data-pts="${it.pts}" data-id="${id}">
+            <span class="item-text"><span class="item-code">${it.code}</span>${it.text}</span>
+            <span class="item-pts ${t}">−${it.pts}</span>
+          </label>
+          <div class="item-note">
+            <input type="text" maxlength="6" placeholder="minutul">
+            <span>momentul erorii (opțional)</span>
+          </div>
+        </div>`;
+    }
   });
 });
 list.innerHTML = html;
@@ -259,6 +291,19 @@ function recalc(){
     const row = document.getElementById('item-' + cb.dataset.id);
     if(cb.checked){ penalty += Number(cb.dataset.pts); row.classList.add('checked'); }
     else { row.classList.remove('checked'); }
+  });
+  document.querySelectorAll('#criteriaList .item[data-counter="true"]').forEach(row=>{
+    const pts = Number(row.dataset.pts);
+    const count = Number(row.dataset.count || 0);
+    const sub = document.getElementById('sub-' + row.id.replace('item-',''));
+    if(count > 0){
+      penalty += pts * count;
+      row.classList.add('checked');
+      sub.textContent = count + ' × ' + pts + ' = ' + (pts*count) + ' pct.';
+    } else {
+      row.classList.remove('checked');
+      sub.textContent = '';
+    }
   });
   const score = Math.max(0, 100 - penalty);
   scoreNumber.textContent = score;
@@ -287,10 +332,26 @@ list.addEventListener('change', e=>{
   if(e.target.matches('input[type=checkbox]')) recalc();
 });
 
+list.addEventListener('click', e=>{
+  const btn = e.target.closest('.step-btn');
+  if(!btn) return;
+  const row = document.getElementById('item-' + btn.dataset.id);
+  let count = Number(row.dataset.count || 0);
+  count += btn.classList.contains('plus') ? 1 : -1;
+  if(count < 0) count = 0;
+  row.dataset.count = count;
+  document.getElementById('count-' + btn.dataset.id).textContent = count;
+  recalc();
+});
+
 document.getElementById('resetBtn').addEventListener('click', ()=>{
-  if(!confirm('Ștergi toate bifele și pornești un candidat nou?')) return;
+  if(!confirm('Ștergi toate bifele/contoarele și pornești un candidat nou?')) return;
   document.querySelectorAll('#criteriaList input[type=checkbox]').forEach(cb=> cb.checked=false);
   document.querySelectorAll('#criteriaList input[type=text]').forEach(inp=> inp.value='');
+  document.querySelectorAll('#criteriaList .item[data-counter="true"]').forEach(row=>{
+    row.dataset.count = 0;
+    document.getElementById('count-' + row.id.replace('item-','')).textContent = '0';
+  });
   ['fName','fDate','fExam','fOrder'].forEach(id=> document.getElementById(id).value='');
   recalc();
 });
