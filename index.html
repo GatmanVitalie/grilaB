@@ -137,7 +137,7 @@
 
   <div class="candidate-panel">
     <div class="field"><label>Candidat</label><input type="text" id="fName" placeholder="Nume Prenume"></div>
-    <div class="field"><label>Data</label><input type="text" id="fDate" placeholder="zz.ll.aaaa"></div>
+    <div class="field"><label>Data examenului</label><input type="text" id="fDate" placeholder="zz.ll.aaaa hh:mm"></div>
     <div class="field"><label>Examinator</label><input type="text" id="fExam" placeholder="Nume examinator"></div>
     <div class="field"><label>Nr. comandă</label><input type="text" id="fOrder" placeholder="—"></div>
   </div>
@@ -240,6 +240,13 @@ const SECTIONS = [
     {code:"15.3", pts:5, text:"Incapacitate de a conduce cu viteza maximă permisă"},
   ]},
 ];
+
+function formatNowRo(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes());
+}
+document.getElementById('fDate').value = formatNowRo();
 
 function tier(pts){ return pts>=27 ? 'critical' : (pts>=5 ? 'moderate' : 'minor'); }
 
@@ -357,7 +364,8 @@ document.getElementById('resetBtn').addEventListener('click', ()=>{
     row.dataset.count = 0;
     document.getElementById('count-' + row.id.replace('item-','')).textContent = '0';
   });
-  ['fName','fDate','fExam','fOrder'].forEach(id=> document.getElementById(id).value='');
+  ['fName','fExam','fOrder'].forEach(id=> document.getElementById(id).value='');
+  document.getElementById('fDate').value = formatNowRo();
   recalc();
 });
 
