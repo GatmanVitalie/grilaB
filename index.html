@@ -369,6 +369,13 @@ document.getElementById('resetBtn').addEventListener('click', ()=>{
   recalc();
 });
 
+function pdfSafe(s){
+  return String(s)
+    .replace(/[ăĂ]/g, c => c === 'ă' ? 'a' : 'A')
+    .replace(/[șşȘŞ]/g, c => (c === 'ș' || c === 'ş') ? 's' : 'S')
+    .replace(/[țţȚŢ]/g, c => (c === 'ț' || c === 'ţ') ? 't' : 'T');
+}
+
 function collectViolations(){
   const rows = [];
   document.querySelectorAll('#criteriaList .item').forEach(item=>{
@@ -381,7 +388,7 @@ function collectViolations(){
       if(count > 0) rows.push({section, code, text, valueLabel: count + ' × ' + pts + ' = ' + (count*pts) + ' pct.'});
     } else {
       const cb = item.querySelector('input[type=checkbox]');
-      if(cb && cb.checked) rows.push({section, code, text, valueLabel: '−' + pts + ' pct.'});
+      if(cb && cb.checked) rows.push({section, code, text, valueLabel: '-' + pts + ' pct.'});
     }
   });
   return rows;
@@ -415,7 +422,7 @@ function generatePDF(){
     doc.setFontSize(11);
     [['Candidat:', name], ['Data examenului:', date], ['Examinator:', exam], ['Nr. comanda:', order]].forEach(([label,val])=>{
       doc.setFont('helvetica','bold'); doc.text(label, marginX, y);
-      doc.setFont('helvetica','normal'); doc.text(String(val), marginX+42, y);
+      doc.setFont('helvetica','normal'); doc.text(pdfSafe(val), marginX+42, y);
       y += 6;
     });
     y += 4;
@@ -449,13 +456,13 @@ function generatePDF(){
           y += 3;
           if(y > pageH - 25){ doc.addPage(); y = 20; }
           doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(110,110,110);
-          doc.text(r.section, marginX, y);
+          doc.text(pdfSafe(r.section), marginX, y);
           doc.setTextColor(20,20,20);
           y += 5.5;
           lastSection = r.section;
         }
         doc.setFont('helvetica','normal'); doc.setFontSize(10);
-        const wrapped = doc.splitTextToSize(r.code + '  ' + r.text + '   (' + r.valueLabel + ')', maxWidth);
+        const wrapped = doc.splitTextToSize(pdfSafe(r.code + '  ' + r.text + '   (' + r.valueLabel + ')'), maxWidth);
         wrapped.forEach(w=>{
           if(y > pageH - 20){ doc.addPage(); y = 20; }
           doc.text(w, marginX, y);
