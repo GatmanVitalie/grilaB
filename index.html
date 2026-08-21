@@ -31,9 +31,14 @@
   .topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 18px 10px;gap:12px;}
   .topbar h1{font-size:17px;margin:0;letter-spacing:.02em;font-weight:700;}
   .topbar .sub{display:block;color:var(--muted);font-size:12px;font-weight:400;margin-top:3px;letter-spacing:.04em;text-transform:uppercase;}
+  .topbar-actions{display:flex;gap:8px;flex:none;}
   .reset-btn{background:var(--panel-alt);color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:9px 14px;font-size:12px;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:.15s;}
   .reset-btn:hover{color:var(--text);border-color:var(--muted);}
   .reset-btn:active{transform:scale(.96);}
+  .pdf-btn{background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber);border-radius:8px;padding:9px 14px;font-size:12px;font-family:var(--sans);font-weight:600;cursor:pointer;white-space:nowrap;transition:.15s;}
+  .pdf-btn:hover{background:var(--amber);color:#1a1206;}
+  .pdf-btn:active{transform:scale(.96);}
+  .pdf-btn:disabled{opacity:.5;cursor:wait;}
 
   /* Candidate panel */
   .candidate-panel{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 18px 16px;}
@@ -107,7 +112,7 @@
   footer{padding:10px 18px 30px;text-align:center;color:var(--muted);font-size:11px;line-height:1.6;}
 
   @media print{
-    .reset-btn, .item-note{display:none !important;}
+    .reset-btn, .pdf-btn, .item-note{display:none !important;}
     body{background:#fff;color:#000;}
     .gauge-panel{position:static;background:none;}
     .item, .gauge-card{border-color:#ccc;background:#fff;}
@@ -124,7 +129,10 @@
         <span class="sub">Auto-calcul penalizări</span>
       </h1>
     </div>
-    <button class="reset-btn" id="resetBtn">Candidat nou</button>
+    <div class="topbar-actions">
+      <button class="pdf-btn" id="pdfBtn">Salvează PDF</button>
+      <button class="reset-btn" id="resetBtn">Candidat nou</button>
+    </div>
   </div>
 
   <div class="candidate-panel">
@@ -139,15 +147,13 @@
       <svg class="gauge-svg" viewBox="0 0 260 165">
         <path class="arc-track" d="M30,140 A100,100 0 0 1 230,140"/>
         <path class="arc-fill" id="arcFill" d="M30,140 A100,100 0 0 1 230,140"/>
-        <line class="tick-line" x1="196.1" y1="65.0" x2="210.6" y2="48.5"/>
-        <text class="tick-label" x="222" y="34" text-anchor="middle">73</text>
         <text class="end-label" x="30" y="158" text-anchor="middle">0</text>
-        <text class="end-label" x="230" y="158" text-anchor="middle">100</text>
+        <text class="end-label" x="230" y="158" text-anchor="middle">27+</text>
       </svg>
       <div class="readout">
-        <div class="score-number" id="scoreNumber">100</div>
-        <div class="score-label">Scor (100 − penalizări)</div>
-        <div class="penalty-line">Penalizări acumulate: <b id="penaltyNumber">0</b> pct. &nbsp;·&nbsp; prag respingere: 27 pct.</div>
+        <div class="score-number" id="scoreNumber">0</div>
+        <div class="score-label">Suma punctelor de penalizare acumulate</div>
+        <div class="penalty-line">Rezultat: &lt;27 pct. admis &nbsp;·&nbsp; ≥27 pct. respins</div>
         <div class="verdict pass" id="verdict">ADMIS</div>
       </div>
     </div>
@@ -158,6 +164,7 @@
   <footer>Reproduce grila de penalizare din Anexa 3 (Metodica probei practice, categoria B). Rezultat: &lt;27 pct. admis / ≥27 pct. respins.</footer>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 const SECTIONS = [
   {title:"1. Obligațiile conducătorului înainte de deplasare", items:[
@@ -246,7 +253,7 @@ SECTIONS.forEach(sec=>{
 
     if(sec.counter){
       html += `
-        <div class="item ${t}" id="item-${id}" data-counter="true" data-pts="${it.pts}" data-count="0">
+        <div class="item ${t}" id="item-${id}" data-counter="true" data-pts="${it.pts}" data-count="0" data-section="${sec.title}" data-code="${it.code}" data-text="${it.text.replace(/"/g,'&quot;')}">
           <div class="item-row counter-row">
             <span class="item-text"><span class="item-code">${it.code}</span>${it.text}</span>
             <span class="item-pts ${t}">−${it.pts}<i>/dată</i></span>
@@ -262,7 +269,7 @@ SECTIONS.forEach(sec=>{
         </div>`;
     } else {
       html += `
-        <div class="item ${t}" id="item-${id}">
+        <div class="item ${t}" id="item-${id}" data-pts="${it.pts}" data-section="${sec.title}" data-code="${it.code}" data-text="${it.text.replace(/"/g,'&quot;')}">
           <label class="item-row">
             <input type="checkbox" data-pts="${it.pts}" data-id="${id}">
             <span class="item-text"><span class="item-code">${it.code}</span>${it.text}</span>
@@ -281,7 +288,6 @@ list.innerHTML = html;
 const R = 100, CIRC = Math.PI * R;
 const arcFill = document.getElementById('arcFill');
 const scoreNumber = document.getElementById('scoreNumber');
-const penaltyNumber = document.getElementById('penaltyNumber');
 const verdict = document.getElementById('verdict');
 arcFill.style.strokeDasharray = CIRC;
 
@@ -305,11 +311,10 @@ function recalc(){
       sub.textContent = '';
     }
   });
-  const score = Math.max(0, 100 - penalty);
-  scoreNumber.textContent = score;
-  penaltyNumber.textContent = penalty;
+  scoreNumber.textContent = penalty;
 
-  const offset = CIRC * (1 - score/100);
+  const gaugeVal = Math.min(penalty, 27);
+  const offset = CIRC * (1 - gaugeVal/27);
   arcFill.style.strokeDashoffset = offset;
 
   let color = 'var(--green)';
@@ -355,6 +360,121 @@ document.getElementById('resetBtn').addEventListener('click', ()=>{
   ['fName','fDate','fExam','fOrder'].forEach(id=> document.getElementById(id).value='');
   recalc();
 });
+
+function collectViolations(){
+  const rows = [];
+  document.querySelectorAll('#criteriaList .item').forEach(item=>{
+    const section = item.dataset.section;
+    const code = item.dataset.code;
+    const text = item.dataset.text;
+    const pts = Number(item.dataset.pts);
+    if(item.dataset.counter === 'true'){
+      const count = Number(item.dataset.count || 0);
+      if(count > 0) rows.push({section, code, text, valueLabel: count + ' × ' + pts + ' = ' + (count*pts) + ' pct.'});
+    } else {
+      const cb = item.querySelector('input[type=checkbox]');
+      if(cb && cb.checked) rows.push({section, code, text, valueLabel: '−' + pts + ' pct.'});
+    }
+  });
+  return rows;
+}
+
+function generatePDF(){
+  const pdfBtn = document.getElementById('pdfBtn');
+  pdfBtn.disabled = true;
+  pdfBtn.textContent = 'Se generează…';
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'mm', format:'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const marginX = 18;
+    let y = 20;
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(20,20,20);
+    doc.text('Grila examen practic - categoria B', marginX, y);
+    y += 6;
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(120,120,120);
+    doc.text('Rezultatul evaluarii probei practice', marginX, y);
+    doc.setTextColor(20,20,20);
+    y += 10;
+
+    const name = document.getElementById('fName').value.trim() || '-';
+    const date = document.getElementById('fDate').value.trim() || '-';
+    const exam = document.getElementById('fExam').value.trim() || '-';
+    const order = document.getElementById('fOrder').value.trim() || '-';
+
+    doc.setFontSize(11);
+    [['Candidat:', name], ['Data examenului:', date], ['Examinator:', exam], ['Nr. comanda:', order]].forEach(([label,val])=>{
+      doc.setFont('helvetica','bold'); doc.text(label, marginX, y);
+      doc.setFont('helvetica','normal'); doc.text(String(val), marginX+42, y);
+      y += 6;
+    });
+    y += 4;
+
+    const penalty = Number(document.getElementById('scoreNumber').textContent) || 0;
+    const pass = penalty < 27;
+    doc.setDrawColor(200); doc.setLineWidth(0.3);
+    doc.roundedRect(marginX, y, pageW-2*marginX, 20, 2, 2);
+    doc.setFont('helvetica','bold'); doc.setFontSize(13);
+    doc.text('Suma punctelor de penalizare: ' + penalty + ' pct.', marginX+5, y+8);
+    doc.setFontSize(12);
+    if(pass){ doc.setTextColor(50,140,95); doc.text('Rezultat: ADMIS', marginX+5, y+16); }
+    else { doc.setTextColor(190,60,55); doc.text('Rezultat: RESPINS', marginX+5, y+16); }
+    doc.setTextColor(20,20,20);
+    y += 30;
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(11.5);
+    doc.text('Abateri inregistrate', marginX, y);
+    y += 7;
+
+    const rows = collectViolations();
+    const maxWidth = pageW - 2*marginX - 4;
+    if(rows.length === 0){
+      doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
+      doc.text('Nicio abatere inregistrata.', marginX, y);
+      y += 7;
+    } else {
+      let lastSection = null;
+      rows.forEach(r=>{
+        if(r.section !== lastSection){
+          y += 3;
+          if(y > pageH - 25){ doc.addPage(); y = 20; }
+          doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(110,110,110);
+          doc.text(r.section, marginX, y);
+          doc.setTextColor(20,20,20);
+          y += 5.5;
+          lastSection = r.section;
+        }
+        doc.setFont('helvetica','normal'); doc.setFontSize(10);
+        const wrapped = doc.splitTextToSize(r.code + '  ' + r.text + '   (' + r.valueLabel + ')', maxWidth);
+        wrapped.forEach(w=>{
+          if(y > pageH - 20){ doc.addPage(); y = 20; }
+          doc.text(w, marginX, y);
+          y += 5;
+        });
+        y += 1.5;
+      });
+    }
+
+    y = Math.max(y + 15, pageH - 40);
+    if(y > pageH - 25){ doc.addPage(); y = 30; }
+    doc.setFontSize(10); doc.setTextColor(20,20,20);
+    doc.text('Semnatura examinatorului: ______________________', marginX, y);
+    doc.text('Generat: ' + new Date().toLocaleString('ro-RO'), marginX, y+7);
+
+    const safeName = (name !== '-') ? name.replace(/[^a-zA-Z0-9ăâîșțĂÂÎȘȚ \-]/g,'').trim().replace(/\s+/g,'_') : 'rezultat_examen';
+    doc.save(safeName + '.pdf');
+  } catch(err){
+    alert('Nu am putut genera PDF-ul: ' + err.message);
+  } finally {
+    pdfBtn.disabled = false;
+    pdfBtn.textContent = 'Salvează PDF';
+  }
+}
+
+document.getElementById('pdfBtn').addEventListener('click', generatePDF);
+
 </script>
 </body>
 </html>
